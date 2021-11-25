@@ -1,9 +1,14 @@
 from pathlib import Path
 import matplotlib.pyplot as plt
+import itertools as itr
+import pandas as pd
+import os
+
+from extract_mouse_TPR_FPR import extract_mouse_tpr_fpr
+
 
 import allensdk
 from allensdk.brain_observatory.behavior.behavior_project_cache import VisualBehaviorOphysProjectCache
-import pandas as pd
 
 pd.set_option('display.max_columns', None)
 
@@ -13,7 +18,7 @@ the desired data, which you can read more about here: https://allensdk.readthedo
 
 The data I chose to study was the Visual Behavior 2P Project (Optical Physiology)
 
-Full whitepaper of experiment/data pipeline: https://brainmapportal-live-4cc80a57cd6e400d854-f7fdcae.divio-media.net/filer_public/4e/be/4ebe2911-bd38-4230-86c8-01a86cfd758e/visual_behavior_2p_technical_whitepaper.pdf
+Full whitepaper of experiment/data pipeline: https://tinyurl.com/yc5tnnyk
 Instructions for interacting with the Allen SDK: https://allensdk.readthedocs.io/en/latest/visual_behavior_optical_physiology.html
 
 Spark Notes:
@@ -32,16 +37,20 @@ Potential things to study:
 # Confirming your allensdk version
 print(f"Your allensdk version is: {allensdk.__version__}")
 
-
 data_storage_directory = Path("data")
 
+# object for downloading actual data from S3 Bucket (using cache.get_behavior_session(behavior_session_id)
 cache = VisualBehaviorOphysProjectCache.from_s3_cache(cache_dir=data_storage_directory)
 
 # High-level overview of the behavior sessions in Visual Behavior Dataset (Pandas Dataframe)
-all_behavior_sessions = cache.get_behavior_session_table()
+all_behavior_sessions = cache.get_behavior_session_table().sort_index()
+#all_ophys_sessions = cache.get_ophys_session_table().sort_values(by=['mouse_id', 'session_type'])
+all_ophys_sessions = cache.get_ophys_session_table().sort_index()
 
 # Lists of all features for a given recording session: described in detail here: https://tinyurl.com/ypmbuz4v
-#print(all_behavior_sessions.columns)
+print(all_behavior_sessions.columns)
+test = all_behavior_sessions[['mouse_id', 'session_type']]
+
 
 '''
 Important Attributes
@@ -52,20 +61,16 @@ Important Attributes
 
 '''
 
-
-
 # Extract a single recording session (behavior vs ophys = 2-photon recordings)
 # behavior_session = cache.get_behavior_session(behavior_session_id=870987812)
 
 
+all_session_types = all_ophys_sessions['session_type'].unique()
+
+extract_mouse_tpr_fpr(cache, all_session_types,
+                      ophys_only=True,
+                      check_point_file="data\\results\\test.csv",
+                      mice_file="data\\results\\mouse_test.csv")
 
 
-# Extracting Data for a single mouse: https://tinyurl.com/yac6d8cc
-print(all_behavior_sessions['mouse_id'].unique())
-
-mouse_id = 457841
-specific_mouse_table = all_behavior_sessions[all_behavior_sessions['mouse_id'] == mouse_id]
-
-
-for behavior_session in specific_mouse_table.index:
-    print(hehavior)
+cache.get_behavior_session()
