@@ -52,6 +52,7 @@ print(all_behavior_sessions.columns)
 test = all_behavior_sessions[['mouse_id', 'session_type']]
 
 
+
 '''
 Important Attributes
     * session_type:    behavioral training stage or 2-photon imaging conditions for that particular recording session. e
