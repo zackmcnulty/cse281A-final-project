@@ -4,7 +4,7 @@ import itertools as itr
 import pandas as pd
 import os
 
-from extract_mouse_TPR_FPR import extract_mouse_tpr_fpr
+from extract_mouse_metrics import extract_mouse_metrics
 
 
 import allensdk
@@ -62,15 +62,15 @@ Important Attributes
 '''
 
 # Extract a single recording session (behavior vs ophys = 2-photon recordings)
-# behavior_session = cache.get_behavior_session(behavior_session_id=870987812)
+behavior_session = cache.get_behavior_session(behavior_session_id=870987812)
 
+print(list(behavior_session.get_performance_metrics().keys()))
 
 all_session_types = all_ophys_sessions['session_type'].unique()
 
-extract_mouse_tpr_fpr(cache, all_session_types,
-                      ophys_only=True,
-                      check_point_file="data\\results\\test.csv",
-                      mice_file="data\\results\\mouse_test.csv")
+extract_mouse_metrics(cache, all_session_types,
+                      check_point_file="data\\results\\metrics_test.csv",
+                      id_file="data\\results\\id_test.csv")
 
 
 cache.get_behavior_session()
