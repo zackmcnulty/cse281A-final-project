@@ -1,7 +1,26 @@
-import itertools as itr
 import pandas as pd
 import numpy as np
 from pathlib import Path
+
+"""
+This program queries the Allen Institute Database to collect performance metrics for each behavior session, including 
+those with Optical Physiology. These metrics capture how well the given mouse in the session was able to perform
+the behavior task: recognizing when the presented image changed. It counts true/false positive/negatives, as well as 
+a measure of classification accuracy called D prime which balances true positives and false positives. This metric is
+described in more detail in the whitepaper.
+
+            'trial_count', 'go_trial_count', 'catch_trial_count',
+           'hit_trial_count', 'miss_trial_count', 'false_alarm_trial_count',
+           'correct_reject_trial_count', 'auto_reward_count', 'earned_reward_count',
+           'total_reward_count', 'total_reward_volume', 'maximum_reward_rate',
+           'engaged_trial_count', 'mean_hit_rate', 'mean_hit_rate_uncorrected',
+           'mean_hit_rate_engaged', 'mean_false_alarm_rate', 'mean_false_alarm_rate_uncorrected',
+           'mean_false_alarm_rate_engaged', 'mean_dprime', 'mean_dprime_engaged',
+           'max_dprime', 'max_dprime_engaged'
+
+"""
+
+
 
 # Extracting Data for a single mouse: https://tinyurl.com/yac6d8cc
 def extract_mouse_metrics(cache, all_session_types, check_point_file="data\\results\\mouse_TPR_FPR.csv", id_file="data\\results\\remaining_ids.csv"):
@@ -100,3 +119,36 @@ def extract_mouse_metrics(cache, all_session_types, check_point_file="data\\resu
             np.savetxt(id_file, remaining_session_ids)
         except:
             print("Completed all sessions!")
+
+
+
+
+
+
+
+if __name__ == "__main__":
+    import allensdk
+    from allensdk.brain_observatory.behavior.behavior_project_cache import VisualBehaviorOphysProjectCache
+
+    # Confirming your allensdk version
+    print(f"Your allensdk version is: {allensdk.__version__}")
+
+    # Directory to store data downloaded through the AllenSDK
+    data_storage_directory = Path("data")
+
+    # object for downloading actual data from S3 Bucket (using cache.get_behavior_session(behavior_session_id)
+    cache = VisualBehaviorOphysProjectCache.from_s3_cache(cache_dir=data_storage_directory)
+
+    # High-level overview of the behavior sessions in Visual Behavior Dataset (Pandas Dataframe)
+    # Lists of all features for a given recording session: described in detail here: https://tinyurl.com/ypmbuz4v
+    all_behavior_sessions = cache.get_behavior_session_table().sort_index()
+
+    # all_ophys_sessions = cache.get_ophys_session_table().sort_values(by=['mouse_id', 'session_type'])
+    all_ophys_sessions = cache.get_ophys_session_table().sort_index()
+
+    all_session_types = all_ophys_sessions['session_type'].unique()
+
+    extract_mouse_metrics(cache, all_session_types,
+                          check_point_file="data\\results\\metrics_test.csv",
+                          id_file="data\\results\\id_test.csv")
+
