@@ -4,17 +4,46 @@ import pandas as pd
 from pathlib import  Path
 
 
+def aggregate_sessions(table):
+
+    """
+    Calculate true positive rates and false positive rates for each mouse
+
+    :param table:  metric data table
+    :return:       aggregated table
+    """
+    new_table = table.groupby(by=['mouse_id']).agg(['sum'])
+    new_table['TPR'] = new_table.apply(lambda x: x['hit_trial_count'] / x['go_trial_count'], axis=1)
+    new_table['FPR'] = new_table.apply(lambda x: x['false_alarm_trial_count'] / x['catch_trial_count'], axis=1)
+
+    return new_table
+
 
 if __name__ == "__main__":
 
     # metric table CSV
     filepath = Path("data\\results\\metrics_test.csv")
 
+    # features of interest
+    features = ['mouse_id', 'go_trial_count',
+                   'catch_trial_count', 'hit_trial_count', 'miss_trial_count',
+                   'false_alarm_trial_count', 'correct_reject_trial_count']
+
     # load performance metrics
     metrics_table = pd.read_csv(filepath, index_col="behavior_session_id")
+
+    print(metrics_table.columns)
 
     # throw out passive sessions because the mice are not performing the task: they are simply viewing the
     # stimulus and neural recordings are taken; no licking involved...
     metrics_table = metrics_table.loc[~ metrics_table['session_type'].str.contains('passive')]
 
-    print("hi mom")
+    # split into familiar trials and novel trials. OPHYS0, 1, 2,3 correspond to familiar, 4,5,6 to novel
+    familiar_table = metrics_table.loc[metrics_table['session_type'].str.contains('[0-3]', regex=True)][features]
+    novel_table = metrics_table.loc[metrics_table['session_type'].str.contains('[4-6]', regex=True)][features]
+
+    # Choose which statistics you want to aggregate for each mouse
+    familiar_table = aggregate_sessions(familiar_table)
+    novel_table = aggregate_sessions(novel_table)
+
+
