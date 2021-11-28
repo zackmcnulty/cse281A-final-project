@@ -1,0 +1,20 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from pathlib import  Path
+
+
+
+if __name__ == "__main__":
+
+    # metric table CSV
+    filepath = Path("data\\results\\metrics_test.csv")
+
+    # load performance metrics
+    metrics_table = pd.read_csv(filepath, index_col="behavior_session_id")
+
+    # throw out passive sessions because the mice are not performing the task: they are simply viewing the
+    # stimulus and neural recordings are taken; no licking involved...
+    metrics_table = metrics_table.loc[~ metrics_table['session_type'].str.contains('passive')]
+
+    print("hi mom")
