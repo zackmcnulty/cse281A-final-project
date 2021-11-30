@@ -11,30 +11,15 @@ from allensdk.brain_observatory.behavior.behavior_project_cache import VisualBeh
 pd.set_option('display.max_columns', None)
 
 """
-This data is collected by the Allen Institute. Conveniently the institute provides a SDK for easily accessing/analyzing 
-the desired data, which you can read more about here: https://allensdk.readthedocs.io/en/latest/index.html
-
-The data I chose to study was the Visual Behavior 2P Project (Optical Physiology)
-
-Full whitepaper of experiment/data pipeline: https://tinyurl.com/yc5tnnyk
-Instructions for interacting with the Allen SDK: https://allensdk.readthedocs.io/en/latest/visual_behavior_optical_physiology.html
-
-Spark Notes:
-* Images (natural scenes) flashed in front of mice and they were trained to detect when the image changes and gives a response
-* Data Collected:
-    * Ca+ Fluorescent imaging of visual cortex 
-    * Ophys = optical physiology recordings
-
-Potential things to study:
-* Mice were tested both on images seen in training and novel images. Any difference? What role does novelty play in the encoding
-* Building a predictor to guess mouse's response and analyszing which factors are most heavily weighted (runs into overparameterization problem
-        where we have convergence of predictions but not necessarily of weights, so analyzing weights may be misleading.
-* Classify active/passive and novel/familar image sets (see figure 5 of whitepaper, pg 6) 
+This file handles the downloading and preprocessing of the 2-photon Ca imaging photos. It converts such photos to sparse 
+matrices using thresholding as described in the project paper. 
 """
 
 
 def make_sparse(image, threshold=0.7):
     """
+        Converts a black and white image to a sparse matrix by zeroing out all pixels that fall below the given
+        threshold (pixel values are in [0,1])
 
     :param image:         black/white image to be converted to spare matrix
     :param threshold:     cutoff threshold: zero out all pixel values below this threshold
@@ -48,13 +33,6 @@ def make_sparse(image, threshold=0.7):
     print(f"\n Image has been reduced to {sparsity}% percent of its original size using threshold {threshold}\n")
 
     return csr_matrix(sparse_image)
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
