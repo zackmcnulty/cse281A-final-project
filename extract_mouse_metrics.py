@@ -21,9 +21,9 @@ described in more detail in the whitepaper.
 """
 
 
-
 # Extracting Data for a single mouse: https://tinyurl.com/yac6d8cc
-def extract_mouse_metrics(cache, all_session_types, check_point_file="data\\results\\mouse_TPR_FPR.csv", id_file="data\\results\\remaining_ids.csv"):
+def extract_mouse_metrics(cache, all_session_types, check_point_file="data\\results\\mouse_TPR_FPR.csv",
+                          id_file="data\\results\\remaining_ids.csv"):
 
     """
         Extracts summary performance metrics for each session and organizes them into a single dataframe
@@ -77,7 +77,7 @@ def extract_mouse_metrics(cache, all_session_types, check_point_file="data\\resu
 
         try:
             session = cache.get_behavior_session(session_id)
-        except OSError as err:
+        except Exception as err:
             print(err)
             print(f"Failed to load behavior session {session_id}")
             continue
@@ -119,11 +119,6 @@ def extract_mouse_metrics(cache, all_session_types, check_point_file="data\\resu
             np.savetxt(id_file, remaining_session_ids)
         except:
             print("Completed all sessions!")
-
-
-
-
-
 
 
 if __name__ == "__main__":
