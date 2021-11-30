@@ -1,0 +1,105 @@
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.optimize import differential_evolution, minimize
+import pandas as pd
+from pathlib import  Path
+from scipy.stats import beta, binom
+from scipy.special import gamma as gamma_function
+from scipy.special import gammaln as log_gf
+from scipy.special import beta as beta_function
+from scipy.stats import betabinom
+
+def aggregate_sessions(table):
+
+    """
+    Calculate true positive rates and false positive rates for each mouse
+
+    :param table:  metric data table
+    :return:       aggregated table
+    """
+    new_table = table.groupby(by=['mouse_id']).agg(['sum'])
+    new_table['TPR'] = new_table.apply(lambda x: x['hit_trial_count'] / x['go_trial_count'], axis=1)
+    new_table['FPR'] = new_table.apply(lambda x: x['false_alarm_trial_count'] / x['catch_trial_count'], axis=1)
+
+    return new_table
+
+
+def empirical_bayes(X, n):
+    """
+    given a vector X of observations, one for each individual, use empirical bayes to estimate alpha, beta in the
+    Beta-Binomial heirarchical model discussed in the paper. Estimate alpha and beta using mle
+
+
+    :param X:     vector; total number of successes per individual
+    :param n:     vector same length as n; total number of observations per individual
+    :return:
+    """
+
+    # test = gamma_function(n-X)
+    #func = lambda x: np.prod(gamma_function(x[0]+x[1]) * gamma_function(X + x[0])
+    #                         * gamma_function(n + x[1] - X) / gamma_function(x[0]) / gamma_function(beta)
+    #                         / gamma_function(x[0] + x[1] + n))
+
+    # use log gamma function instead to avoid too large of numbers (e.g. creates a bunch of infs) and
+    # using log gamma does not change the optimal alpha, beta
+    #func = lambda x: np.sum(log_gf(x[0] + x[1]) + log_gf(X + x[0]) + log_gf(n + x[1] - X) - log_gf(x[0])
+    #                        - log_gf(x[1]) - log_gf(x[0] + x[1] + n))
+
+    # -1 is because we want to maximize the sum, or equivalently minimize its negation
+    # func = lambda x: -1.0 * np.sum(beta_function(X + x[0], n + x[1] - X) / beta_function(x[0], x[1]))
+    func = lambda x: -1 * np.sum([betabinom.pmf(X[i], n[i], x[0], x[1]) for i in range(len(X))])
+
+
+    result = differential_evolution(func, x0=[0.5, 0.5], bounds=[(0, 100), (0, 100)], popsize=100)
+    mle_alpha, mle_beta = result.x
+
+    empirical_theta = (mle_alpha + X) / (mle_alpha + mle_beta + n)
+    return empirical_theta
+
+# MAIN METHOD #########################################
+if __name__ == "__main__":
+
+    # metric table CSV
+    filepath = Path("data\\results\\metrics_test.csv")
+
+    # features of interest
+    features = ['mouse_id', 'go_trial_count',
+                   'catch_trial_count', 'hit_trial_count', 'miss_trial_count',
+                   'false_alarm_trial_count', 'correct_reject_trial_count']
+
+    # load performance metrics
+    metrics_table = pd.read_csv(filepath, index_col="behavior_session_id")
+
+    print(metrics_table.columns)
+
+    # throw out passive session because the mice are not performing the task: they are simply viewing the
+    # stimulus and neural recordings are taken; no licking involved...
+    metrics_table = metrics_table.loc[~ metrics_table['session_type'].str.contains('passive')]
+
+    # split into familiar trials and novel trials. OPHYS0, 1, 2,3 correspond to familiar, 4,5,6 to novel
+    familiar_table = metrics_table.loc[metrics_table['session_type'].str.contains('[0-3]', regex=True)][features]
+    novel_table = metrics_table.loc[metrics_table['session_type'].str.contains('[4-6]', regex=True)][features]
+
+    # Choose which statistics you want to aggregate for each mouse
+    familiar_table = aggregate_sessions(familiar_table)
+    novel_table = aggregate_sessions(novel_table)
+
+    empirical_familiar_TPR = empirical_bayes(familiar_table['hit_trial_count'].values,
+                                             familiar_table['go_trial_count'].values)
+    empirical_familiar_FPR = empirical_bayes(familiar_table['false_alarm_trial_count'].values,
+                                             familiar_table['catch_trial_count'].values)
+    empirical_novel_TPR = empirical_bayes(novel_table['hit_trial_count'].values,
+                                          novel_table['go_trial_count'].values)
+    empirical_novel_FPR = empirical_bayes(novel_table['false_alarm_trial_count'].values,
+                                          novel_table['catch_trial_count'].values)
+
+    familiar_table['bayes_TPR'] = empirical_familiar_TPR
+    familiar_table['bayes_FPR'] = empirical_familiar_FPR
+    novel_table['bayes_TPR'] = empirical_novel_TPR
+    novel_table['bayes_FPR'] = empirical_novel_FPR
+
+    familiar_table.to_csv(Path("data\\results\\familiar_tpr_fpr.csv"))
+    novel_table.to_csv(Path("data\\results\\novel_tpr_fpr.csv"))
+    print("done!")
+
+
