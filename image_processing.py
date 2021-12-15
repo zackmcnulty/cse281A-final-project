@@ -20,7 +20,10 @@ which stores the scipy sparse matrix for many of the ophys experiments (the max 
 each row corresponds to the image from a single experiment. Since some files failed to load or ran into other issues,
 some experiments are missing. The processed_image_ids.csv file tracks which experiments are present in the 
 sparse_images.npz. Namely, entry i of the csv gives the ophys_experiment_id of experiment which produced the image
-in row i of the sparse matrix (the 512 x 512 images are flattened to vectors and stored as rows)
+in row i of the sparse matrix (the 512 x 512 images are flattened to vectors and stored as rows). 
+
+For the purposes of this project, we used threshold 0.2 which reduced the image size to about 1-5% of its original size
+most of the time.
 """
 
 
@@ -211,10 +214,13 @@ if __name__ == "__main__":
     stimulus_presentations: images being shown
     """
 
-    thresholds = [0.05, 0.075, 0.1, 0.15]
-    experiment_id = all_ophys_experiment_ids[1]
-    #plot_example_of_thresholding(thresholds, experiment_id)
+    thresholds = []
+    experiment_id = all_ophys_experiment_ids[27]
 
-    stack_all_sparse_matrices(cache, threshold=0.2)
+    # plots an example of thresholding used in this paper
+    plot_example_of_thresholding(thresholds, experiment_id)
+
+    # Sparisfy all max projection images, flatten each to a row vector, and collect all in a single sparse matrix
+    # stack_all_sparse_matrices(cache, threshold=0.2)
 
     print("hello dad")

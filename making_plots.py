@@ -7,6 +7,12 @@ sn.set_theme()
 sn.set_context("talk")
 
 
+"""
+This file is just used to construct summary plots (to be used in the final report) out of the results produced by
+the other files.
+
+"""
+
 # HBayes Plots ###########################
 
 filepath = "data\\results\\hbayes\\"
@@ -20,7 +26,7 @@ familiar_table.index.name = "mouse_id"
 novel_table = pd.read_csv(novel_filepath, index_col=0).dropna()
 novel_table.index.name = "mouse_id"
 
-num_bins = 12  # number histogram bins
+num_bins = 13  # number histogram bins
 
 plt.figure()
 plt.subplot(131)
@@ -41,7 +47,7 @@ plt.xlabel("FPR")
 plt.subplot(133)
 plt.scatter(familiar_table['bayes_FPR'].to_numpy(), familiar_table['bayes_TPR'], color='royalblue', marker='.', label="familiar")
 plt.scatter(novel_table['bayes_FPR'].to_numpy(), novel_table['bayes_TPR'], color='orange', marker=".", label="novel")
-plt.plot([0, 0.5], [0,0.5], 'k--')
+plt.plot([0, 1], [0,1], 'k--')
 plt.xlabel('FPR')
 plt.ylabel('TPR')
 plt.title('Partial ROC Curve')
