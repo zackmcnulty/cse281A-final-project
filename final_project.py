@@ -13,10 +13,14 @@ from allensdk.brain_observatory.behavior.behavior_project_cache import VisualBeh
 pd.set_option('display.max_columns', None)
 
 """
+This file serves no other role other than helping familiarize myself with the Allen institute SDK and the features
+of the Visual Behavior Optical Physiology dataset.
+
+
 This data is collected by the Allen Institute. Conveniently the institute provides a SDK for easily accessing/analyzing 
 the desired data, which you can read more about here: https://allensdk.readthedocs.io/en/latest/index.html
 
-The data I chose to study was the Visual Behavior 2P Project (Optical Physiology)
+The data I chose to study was the Visual Behavior 2 Photon Project (Optical Physiology)
 
 Full whitepaper of experiment/data pipeline: https://tinyurl.com/yc5tnnyk
 Instructions for interacting with the Allen SDK: https://allensdk.readthedocs.io/en/latest/visual_behavior_optical_physiology.html
@@ -32,6 +36,9 @@ Potential things to study:
 * Building a predictor to guess mouse's response and analyszing which factors are most heavily weighted (runs into overparameterization problem
         where we have convergence of predictions but not necessarily of weights, so analyzing weights may be misleading.
 * Classify active/passive and novel/familar image sets (see figure 5 of whitepaper, pg 6) 
+    Familiar sessions are OPHYS_0, OPHYS_1, OPHYS_2, OPHYS_3 and novel are Ophys_4, OPHYS_5, OPHYS_6
+    * passive = given daily water and view stimulus without lick spout (unable to earn rewards) to see how engagement 
+                in the task affects the neural dynamics.
 """
 
 # Confirming your allensdk version
@@ -72,6 +79,5 @@ all_session_types = all_ophys_sessions['session_type'].unique()
 extract_mouse_metrics(cache, all_session_types,
                       check_point_file="data\\results\\metrics_test.csv",
                       id_file="data\\results\\id_test.csv")
-
 
 cache.get_behavior_session()

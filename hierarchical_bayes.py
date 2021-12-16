@@ -6,8 +6,8 @@ from scipy.stats import betabinom
 
 """
 This code is used to run the Hierarchical Bayesian analysis of the TPR/FPR of individual mice in the behavior task
-as described in the paper. It uses the output of the "extract_mouse_mnetrics.py" program, a csv of the performance
-metrics for each individual mouse in each experiment
+as described in the paper. It uses the output of the "extract_mouse_metrics.py" program, a csv of the performance
+metrics for each individual mouse in each experiment, to perform the analysis
 
 """
 
@@ -66,13 +66,13 @@ if __name__ == "__main__":
 
     # features of interest
     features = ['mouse_id', 'go_trial_count',
-                   'catch_trial_count', 'hit_trial_count', 'miss_trial_count',
-                   'false_alarm_trial_count', 'correct_reject_trial_count']
+                'catch_trial_count', 'hit_trial_count', 'miss_trial_count',
+                'false_alarm_trial_count', 'correct_reject_trial_count']
 
     # load performance metrics
     metrics_table = pd.read_csv(filepath, index_col="behavior_session_id")
 
-    #print(metrics_table.columns)
+    print(metrics_table.columns)
 
     # throw out passive session because the mice are not performing the task: they are simply viewing the
     # stimulus and neural recordings are taken; no licking involved...

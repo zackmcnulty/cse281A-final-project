@@ -6,8 +6,6 @@ import traceback
 
 from scipy.sparse import csr_matrix, vstack, save_npz, load_npz
 
-from sklearn.decomposition import TruncatedSVD
-
 import allensdk
 from allensdk.brain_observatory.behavior.behavior_project_cache import VisualBehaviorOphysProjectCache
 
